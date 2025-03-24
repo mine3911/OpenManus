@@ -12,16 +12,15 @@ from app.tool.str_replace_editor import StrReplaceEditor
 
 class Manus(BrowserAgent):
     """
-    A versatile general-purpose agent that uses planning to solve various tasks.
+    一个多功能的通用代理，使用规划来解决各种任务。
 
-    This agent extends BrowserAgent with a comprehensive set of tools and capabilities,
-    including Python execution, web browsing, file operations, and information retrieval
-    to handle a wide range of user requests.
+    该代理扩展了 BrowserAgent，包含了一组全面的工具和功能，
+    包括 Python 执行、网页浏览、文件操作和信息检索，以处理各种用户请求。
     """
 
     name: str = "Manus"
     description: str = (
-        "A versatile agent that can solve various tasks using multiple tools"
+        "一个多功能的代理，可以使用多种工具解决各种任务"
     )
 
     system_prompt: str = SYSTEM_PROMPT.format(directory=config.workspace_root)
@@ -30,7 +29,7 @@ class Manus(BrowserAgent):
     max_observe: int = 10000
     max_steps: int = 20
 
-    # Add general-purpose tools to the tool collection
+    # 添加通用工具到工具集合
     available_tools: ToolCollection = Field(
         default_factory=lambda: ToolCollection(
             PythonExecute(), BrowserUseTool(), StrReplaceEditor(), Terminate()
@@ -38,11 +37,11 @@ class Manus(BrowserAgent):
     )
 
     async def think(self) -> bool:
-        """Process current state and decide next actions with appropriate context."""
-        # Store original prompt
+        """处理当前状态并根据适当上下文决定下一步操作。"""
+        # 存储原始提示信息
         original_prompt = self.next_step_prompt
 
-        # Only check recent messages (last 3) for browser activity
+        # 仅检查最近的消息（最后3条）以检测浏览器活动
         recent_messages = self.memory.messages[-3:] if self.memory.messages else []
         browser_in_use = any(
             "browser_use" in msg.content.lower()
@@ -51,13 +50,13 @@ class Manus(BrowserAgent):
         )
 
         if browser_in_use:
-            # Override with browser-specific prompt temporarily to get browser context
+            # 临时覆盖为浏览器特定提示以获取浏览器上下文
             self.next_step_prompt = BROWSER_NEXT_STEP_PROMPT
 
-        # Call parent's think method
+        # 调用父类的 think 方法
         result = await super().think()
 
-        # Restore original prompt
+        # 恢复原始提示信息
         self.next_step_prompt = original_prompt
 
         return result
